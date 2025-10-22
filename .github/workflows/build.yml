@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -29,22 +29,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install pyinstaller
         
-    - name: Test the script
-      run: |
-        python main.py --version 2>nul || python -c "print('Script is ready for testing')"
-        
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile --console --name="过期日计算器" --clean main.py
+        pyinstaller --onefile --console --name="ExpiryCalculator" --clean main.py
         
     - name: Upload Windows executable
       uses: actions/upload-artifact@v4
       with:
-        name: 过期日计算器-Windows
-        path: dist/过期日计算器.exe
-        retention-days: 30
+        name: expiry-calculator-windows
+        path: dist/ExpiryCalculator.exe
         
-  build-release:
+  create-release:
     name: Create Release
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch'
@@ -54,23 +49,22 @@ jobs:
     - name: Download Windows executable
       uses: actions/download-artifact@v4
       with:
-        name: 过期日计算器-Windows
-        path: ./dist
+        name: expiry-calculator-windows
         
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: dist/过期日计算器.exe
+        files: ExpiryCalculator.exe
         tag_name: v1.0.${{ github.run_number }}
         name: Release v1.0.${{ github.run_number }}
         body: |
-          日期和保质期推测过期日程序
+          Expiry Date Calculator
           
-          功能：
-          - 输入当前日期和保质期
-          - 计算过期日期
-          - 显示剩余天数
-          - 过期提醒
+          Features:
+          - Input current date and shelf life
+          - Calculate expiry date
+          - Show remaining days
+          - Expiry reminders
           
-          构建编号: ${{ github.run_number }}
-          构建日期: ${{ github.event.head_commit.timestamp }}
+          Build: ${{ github.run_number }}
+          Date: ${{ github.event.head_commit.timestamp }}

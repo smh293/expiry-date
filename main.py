@@ -2,6 +2,30 @@ from datetime import datetime, timedelta
 import os
 import sys
 
+# 程序信息 - 使用英文避免编码问题
+APP_NAME = "Expiry Calculator"
+APP_VERSION = "1.0.0"
+
+def show_info():
+    """显示程序信息"""
+    print(f"{'='*50}")
+    print(f"         {APP_NAME} v{APP_VERSION}")
+    print(f"{'='*50}")
+
+def clear_screen():
+    """清屏函数"""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def print_header():
+    """打印程序标题"""
+    clear_screen()
+    show_info()
+    
+# 其余代码保持不变...
+from datetime import datetime, timedelta
+import os
+import sys
+
 # 版本信息
 VERSION = "1.0.0"
 AUTHOR = "过期日计算器"
