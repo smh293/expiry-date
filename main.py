@@ -2,6 +2,40 @@ from datetime import datetime, timedelta
 import os
 import sys
 
+# 版本信息
+VERSION = "1.0.0"
+AUTHOR = "过期日计算器"
+
+def show_version():
+    """显示版本信息"""
+    print(f"{AUTHOR} 版本 {VERSION}")
+    print("GitHub Actions 自动构建")
+    sys.exit(0)
+
+def check_args():
+    """检查命令行参数"""
+    if len(sys.argv) > 1:
+        if sys.argv[1] in ['-v', '--version', '版本']:
+            show_version()
+        elif sys.argv[1] in ['-h', '--help', '帮助']:
+            print("使用方法:")
+            print("  python main.py              # 运行程序")
+            print("  python main.py --version    # 显示版本")
+            print("  python main.py --help       # 显示帮助")
+            sys.exit(0)
+
+# 在程序开始处检查参数
+check_args()
+
+# 其余原有代码保持不变...
+def clear_screen():
+    """清屏函数"""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+from datetime import datetime, timedelta
+import os
+import sys
+
 def clear_screen():
     """清屏函数"""
     os.system('cls' if os.name == 'nt' else 'clear')

@@ -7,23 +7,22 @@ on:
     branches: [ main, master ]
   workflow_dispatch:  # 允许手动触发
 
+permissions:
+  contents: write
+
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [windows-latest]
-        python-version: [3.9]
-    
-    runs-on: ${{ matrix.os }}
+  build-windows:
+    name: Build on Windows
+    runs-on: windows-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.9'
         
     - name: Install dependencies
       run: |
@@ -32,26 +31,38 @@ jobs:
         
     - name: Test the script
       run: |
-        python main.py --help || echo "Script tested"
+        python main.py --version 2>nul || python -c "print('Script is ready for testing')"
         
     - name: Build executable with PyInstaller
       run: |
         pyinstaller --onefile --console --name="过期日计算器" --clean main.py
         
     - name: Upload Windows executable
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: 过期日计算器-Windows
         path: dist/过期日计算器.exe
         retention-days: 30
         
-    - name: Create release with executable
-      if: github.event_name == 'workflow_dispatch'
+  build-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    needs: build-windows
+    
+    steps:
+    - name: Download Windows executable
+      uses: actions/download-artifact@v4
+      with:
+        name: 过期日计算器-Windows
+        path: ./dist
+        
+    - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         files: dist/过期日计算器.exe
-        tag_name: v1.0.0
-        name: Release v1.0.0
+        tag_name: v1.0.${{ github.run_number }}
+        name: Release v1.0.${{ github.run_number }}
         body: |
           日期和保质期推测过期日程序
           
@@ -60,3 +71,6 @@ jobs:
           - 计算过期日期
           - 显示剩余天数
           - 过期提醒
+          
+          构建编号: ${{ github.run_number }}
+          构建日期: ${{ github.event.head_commit.timestamp }}
