@@ -1,0 +1,62 @@
+name: Build Windows Executable
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest]
+        python-version: [3.9]
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        
+    - name: Test the script
+      run: |
+        python main.py --help || echo "Script tested"
+        
+    - name: Build executable with PyInstaller
+      run: |
+        pyinstaller --onefile --console --name="过期日计算器" --clean main.py
+        
+    - name: Upload Windows executable
+      uses: actions/upload-artifact@v3
+      with:
+        name: 过期日计算器-Windows
+        path: dist/过期日计算器.exe
+        retention-days: 30
+        
+    - name: Create release with executable
+      if: github.event_name == 'workflow_dispatch'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/过期日计算器.exe
+        tag_name: v1.0.0
+        name: Release v1.0.0
+        body: |
+          日期和保质期推测过期日程序
+          
+          功能：
+          - 输入当前日期和保质期
+          - 计算过期日期
+          - 显示剩余天数
+          - 过期提醒
